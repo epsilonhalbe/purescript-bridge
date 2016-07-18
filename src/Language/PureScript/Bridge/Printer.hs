@@ -71,10 +71,14 @@ importLineToText l = "import " <> importModule l <> " (" <> typeList <> ")"
     typeList = T.intercalate ", " (Set.toList (importTypes l))
 
 sumTypeToText :: SumType 'PureScript -> Text
-sumTypeToText (SumType t cs) = T.unlines $
-    "data " <> typeInfoToText True t <> " ="
-  : "    " <> T.intercalate "\n  | " (map (constructorToText 4) cs)
-  : [ "\nderive instance generic" <> _typeName t <> " :: Generic " <> _typeName t ]
+sumTypeToText (SumType t cs) =
+  T.unlines [ "data " <> typeInfoToText True t <> " ="
+            , "    "  <> T.intercalate "\n  | " (map (constructorToText 4) cs)
+            , ""
+            , deriveGeneric t
+            ]
+  where deriveGeneric t' = T.unwords [ "derive instance generic" <> _typeName t'
+                                    , ":: Generic" ,_typeName t']
 
 
 constructorToText :: Int -> DataConstructor 'PureScript -> Text
