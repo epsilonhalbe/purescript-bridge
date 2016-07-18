@@ -5,9 +5,11 @@
 module Language.PureScript.Bridge.Printer where
 
 import           Control.Monad
+import           Control.Lens
 import           Data.Map.Strict                     (Map)
 import qualified Data.Map.Strict                     as Map
 import           Data.Monoid
+import           Data.Maybe
 import           Data.Set                            (Set)
 import qualified Data.Set                            as Set
 import           Data.Text                           (Text)
@@ -79,6 +81,46 @@ sumTypeToText (SumType t cs) =
             ]
   where deriveGeneric t' = T.unwords [ "derive instance generic" <> _typeName t'
                                     , ":: Generic" ,_typeName t']
+
+lensesAndPrismsText :: SumType 'PureScript -> Bool -> Text
+lensesAndPrismsText (SumType _ cs) shouldStripPrefix =
+  T.unlines [ T.unlines $ map (mkPrismsText._sigConstructor) cs
+            , T.unlines $ map (mkLensesText shouldStripPrefix) cs ]
+
+  where mkPrismsText :: Text -> Text
+        mkPrismsText _ = T.unlines [ ]
+
+        mkLensesText :: Bool -> DataConstructor lang -> Text
+        mkLensesText shouldStripPrefix' c = fromMaybe "" $
+          do recs <- c^?sigValues._Right
+             let accessors = recs^..traversed.recLabel
+             guard (all startWithUnderscore accessors)
+             names <- if shouldStripPrefix'
+                        then do pfx <- getCommonPrefix accessors
+                                return $ over traverse (T.take (T.length pfx)) accessors
+                        else return accessors
+             return $ T.unlines $ zipWith makeLens names accessors
+
+        makeLens :: Text -> Text -> Text
+        makeLens name access = T.unlines
+            [name <>" :: forall b r a t s. Lens {"<>access<>" :: a | r} {"<>access<>" :: b | r} a b"
+            ,name <>" = lens (\\o -> o."<>access<>") (\\o x -> o{"<>access<>" = x})"]
+
+
+        startWithUnderscore :: Text -> Bool
+        startWithUnderscore = ("_" ==) . T.take 1
+
+        getCommonPrefix :: [Text] -> Maybe Text
+        getCommonPrefix []     = Nothing
+        getCommonPrefix [_]    = Nothing
+        getCommonPrefix (x:xx) = foldr (\a b -> fst3 <$> (b >>= T.commonPrefixes a)) (Just x) xx
+
+        fst3 :: (a,b,c) -> a
+        fst3 (x,_,_) = x
+
+
+
+
 
 
 constructorToText :: Int -> DataConstructor 'PureScript -> Text
