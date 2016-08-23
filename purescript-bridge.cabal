@@ -62,6 +62,8 @@ library
                 , Language.PureScript.Bridge.Tuple
                 , Language.PureScript.Bridge.TypeInfo
                 , Language.PureScript.Bridge.TypeParameters
+                , Session
+                , TMP
 
   -- Modules included in this library but not exported.
   -- other-modules:

@@ -9,12 +9,16 @@
 module Main where
 
 import           Control.Monad                             (unless)
+import           Data.Algorithm.Diff
+import           Data.Algorithm.DiffOutput
 import qualified Data.Map                                  as Map
 import           Data.Proxy
 import qualified Data.Text                                 as T
 import           Language.PureScript.Bridge
 import           Language.PureScript.Bridge.TypeParameters
 import           Test.Hspec                                (Spec, hspec, describe, it)
+import           Test.Hspec.Expectations.Pretty
+import           Test.Hspec.Core.Runner
 import           Test.Hspec.Expectations.Pretty
 
 import           TestData
