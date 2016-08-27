@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
+
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -9,16 +11,12 @@
 module Main where
 
 import           Control.Monad                             (unless)
-import           Data.Algorithm.Diff
-import           Data.Algorithm.DiffOutput
 import qualified Data.Map                                  as Map
 import           Data.Proxy
 import qualified Data.Text                                 as T
 import           Language.PureScript.Bridge
 import           Language.PureScript.Bridge.TypeParameters
 import           Test.Hspec                                (Spec, hspec, describe, it)
-import           Test.Hspec.Expectations.Pretty
-import           Test.Hspec.Core.Runner
 import           Test.Hspec.Expectations.Pretty
 
 import           TestData
@@ -27,6 +25,7 @@ import           TestData
 
 main :: IO ()
 main = hspec $ do allTests
+                  prismsTest
 
 
 allTests :: Spec
@@ -82,3 +81,17 @@ allTests =
                           ]
       in m `shouldBe` txt
 
+prismsTest :: Spec
+prismsTest = describe "Prisms" $
+  it "should create a simple _Left Prism for Either String Int" $
+    let prsm = mkPrismsText t $ head cs
+        txt = T.unlines
+              [ "_Left :: PrismP (Either String Int) (Array Char)"
+              , "_Left = prism' (\\ (a1String) -> Left a1String )"
+              , "               (\\ x -> case x of"
+              , "                          ( Left a1String ) -> Just (a1String)"
+              , "                          _ -> Nothing"
+              , "               )"
+              , ""
+              ]
+     in prsm `shouldBe` txt

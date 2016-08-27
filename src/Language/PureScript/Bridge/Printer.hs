@@ -2,12 +2,16 @@
 {-# LANGUAGE KindSignatures    #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module Language.PureScript.Bridge.Printer where
 
+import           Control.Lens
 import           Control.Monad
 import           Control.Lens
 import           Data.Map.Strict                     (Map)
 import qualified Data.Map.Strict                     as Map
+import           Data.Maybe
 import           Data.Monoid
 import           Data.Maybe
 import           Data.Set                            (Set)
